@@ -151,7 +151,6 @@ function renderStats() {
   const stats = [
     { n: DATA.items.length, l: "Postulantes" },
     { n: completos, l: "Docs completos" },
-    { n: cities.size, l: "Ciudades / Países" },
   ];
   document.getElementById("stats").innerHTML = stats.map(s =>
     `<div class="stat"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`).join("");
