@@ -181,8 +181,9 @@ function renderCards() {
     content.innerHTML = '<div class="empty">Sin resultados para el filtro actual.</div>';
     return;
   }
+  const dk = DATA.headers.find(h => /fecha/i.test(h)) || "";
   const docCols = DATA.headers.filter(isDoc);
-  const infoCols = DATA.headers.filter(h => h !== nk && !isDoc(h));
+  const infoCols = DATA.headers.filter(h => h !== nk && h !== dk && !isDoc(h));
 
   const docCell = (v) => {
     const s = (v || "").trim();
@@ -192,13 +193,15 @@ function renderCards() {
   };
 
   const thead = `<tr>
-    <th class="sticky">Nombre</th>
+    <th class="sticky">${dk ? labelFor(dk) : "Fecha"}</th>
+    <th>Nombre</th>
     ${infoCols.map(h => `<th>${labelFor(h)}</th>`).join("")}
     ${docCols.map(h => `<th class="doc" title="${labelFor(h)}">${DOC_SHORT[h.trim()] || h}</th>`).join("")}
   </tr>`;
 
   const rows = items.map(item => `<tr>
-    <td class="sticky name">${(item[nk]||"Sin nombre").trim()}</td>
+    <td class="sticky">${dk ? renderValue(item[dk], dk) : ""}</td>
+    <td class="name">${(item[nk]||"Sin nombre").trim()}</td>
     ${infoCols.map(h => `<td>${renderValue(item[h], h)}</td>`).join("")}
     ${docCols.map(h => `<td class="doc">${docCell(item[h])}</td>`).join("")}
   </tr>`).join("");
