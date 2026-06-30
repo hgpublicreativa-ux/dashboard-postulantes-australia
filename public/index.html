@@ -210,8 +210,8 @@ function renderCards() {
 
 function renderAll() { renderStats(); fillCityFilter(); renderCards(); }
 
-async function load() {
-  document.getElementById("content").innerHTML = '<div class="loading">Cargando datos…</div>';
+async function load(silent) {
+  if (!silent) document.getElementById("content").innerHTML = '<div class="loading">Cargando datos…</div>';
   try {
     const r = await fetch("/api/data");
     const j = await r.json();
@@ -219,7 +219,7 @@ async function load() {
     DATA = j;
     renderAll();
     document.getElementById("footer").textContent =
-      "Actualizado: " + new Date(j.updated).toLocaleString("es-EC") + " · " + j.count + " registros";
+      "🟢 En vivo · Actualizado: " + new Date(j.updated).toLocaleString("es-EC") + " · " + j.count + " registros · auto-refresca cada 60s";
   } catch (e) {
     document.getElementById("content").innerHTML =
       `<div class="empty">Error al cargar: ${e.message}</div>`;
@@ -228,6 +228,8 @@ async function load() {
 
 document.getElementById("search").addEventListener("input", renderCards);
 document.getElementById("filterCity").addEventListener("change", renderCards);
+// Auto-actualizar cada 60s (silencioso) para ver registros en vivo
+setInterval(() => load(true), 60000);
 document.getElementById("refresh").addEventListener("click", load);
 load();
 </script>
