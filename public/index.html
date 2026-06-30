@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Postulantes — Migración Circular Australia</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card2: #334155;
+    --txt: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #22c55e;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--txt); line-height: 1.5;
+    padding: 24px; max-width: 1280px; margin: 0 auto;
+  }
+  header { margin-bottom: 24px; }
+  h1 { font-size: 1.6rem; font-weight: 700; }
+  h1 span { color: var(--accent); }
+  .sub { color: var(--muted); font-size: .9rem; margin-top: 4px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 16px; margin: 24px 0; }
+  .stat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; min-width: 140px; flex: 1;
+  }
+  .stat .n { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .stat .l { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  input, select {
+    background: var(--card); border: 1px solid var(--border); color: var(--txt);
+    padding: 10px 14px; border-radius: 8px; font-size: .9rem; flex: 1; min-width: 180px;
+  }
+  button {
+    background: var(--accent); color: #0f172a; border: none; padding: 10px 18px;
+    border-radius: 8px; font-weight: 600; cursor: pointer; font-size: .9rem;
+  }
+  button:hover { opacity: .9; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; transition: transform .15s, border-color .15s;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .card h3 { font-size: 1.05rem; margin-bottom: 12px; color: #fff; }
+  .field { display: flex; gap: 8px; margin: 6px 0; font-size: .85rem; align-items: baseline; }
+  .field .k { color: var(--muted); min-width: 90px; flex-shrink: 0; }
+  .field .v { color: var(--txt); word-break: break-word; }
+  .field a { color: var(--accent); text-decoration: none; }
+  .field a:hover { text-decoration: underline; }
+  .empty, .loading { text-align: center; color: var(--muted); padding: 60px 20px; }
+  .badge { display: inline-block; background: var(--card2); padding: 2px 8px; border-radius: 6px; font-size: .75rem; }
+  footer { margin-top: 32px; color: var(--muted); font-size: .8rem; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Dashboard <span>Postulantes</span></h1>
+  <div class="sub">Migración Circular — Programa Australia · datos en vivo desde Google Sheets</div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="toolbar">
+  <input id="search" type="text" placeholder="Buscar nombre, correo, ciudad..." />
+  <select id="filterCity"><option value="">Todas las ciudades / países</option></select>
+  <button id="refresh">↻ Actualizar</button>
+</div>
+
+<div id="content"><div class="loading">Cargando datos…</div></div>
+
+<footer id="footer"></footer>
+
+<script>
+let DATA = { headers: [], items: [] };
+const urlRe = /^(https?:\/\/|www\.)/i;
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRe = /^[+\d][\d\s\-()]{6,}$/;
+
+function renderValue(val) {
+  const v = (val || "").trim();
+  if (!v) return '<span class="v" style="color:#475569">—</span>';
+  if (urlRe.test(v)) {
+    const href = v.startsWith("http") ? v : "https://" + v;
+    return `<a class="v" href="${href}" target="_blank" rel="noopener">${v}</a>`;
+  }
+  if (emailRe.test(v)) return `<a class="v" href="mailto:${v}">${v}</a>`;
+  if (phoneRe.test(v)) return `<a class="v" href="tel:${v.replace(/[\s\-()]/g,'')}">${v}</a>`;
+  return `<span class="v">${v}</span>`;
+}
+
+function cityKey() {
+  return DATA.headers.find(h => /ciudad|pa[ií]s|residencia/i.test(h)) || "";
+}
+function nameKey() {
+  return DATA.headers.find(h => /nombre/i.test(h)) || DATA.headers[1] || DATA.headers[0];
+}
+
+function renderStats() {
+  const ck = cityKey();
+  const cities = new Set(DATA.items.map(i => (i[ck]||"").trim()).filter(Boolean));
+  const stats = [
+    { n: DATA.items.length, l: "Postulantes" },
+    { n: cities.size, l: "Ciudades / Países" },
+    { n: DATA.headers.length, l: "Campos" },
+  ];
+  document.getElementById("stats").innerHTML = stats.map(s =>
+    `<div class="stat"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`).join("");
+}
+
+function fillCityFilter() {
+  const ck = cityKey();
+  const sel = document.getElementById("filterCity");
+  const cities = [...new Set(DATA.items.map(i => (i[ck]||"").trim()).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todas las ciudades / países</option>' +
+    cities.map(c => `<option value="${c}">${c}</option>`).join("");
+}
+
+function renderCards() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const city = document.getElementById("filterCity").value;
+  const ck = cityKey(), nk = nameKey();
+  let items = DATA.items;
+  if (q) items = items.filter(i => Object.values(i).some(v => (v||"").toLowerCase().includes(q)));
+  if (city) items = items.filter(i => (i[ck]||"").trim() === city);
+
+  const content = document.getElementById("content");
+  if (DATA.items.length === 0) {
+    content.innerHTML = '<div class="empty">No hay postulantes aún. La hoja está vacía — los registros aparecerán aquí automáticamente.</div>';
+    return;
+  }
+  if (items.length === 0) {
+    content.innerHTML = '<div class="empty">Sin resultados para el filtro actual.</div>';
+    return;
+  }
+  content.innerHTML = '<div class="grid">' + items.map(item => {
+    const fields = DATA.headers.filter(h => h !== nk).map(h =>
+      `<div class="field"><span class="k">${h}</span>${renderValue(item[h])}</div>`).join("");
+    return `<div class="card"><h3>${(item[nk]||"Sin nombre").trim()}</h3>${fields}</div>`;
+  }).join("") + '</div>';
+}
+
+function renderAll() { renderStats(); fillCityFilter(); renderCards(); }
+
+async function load() {
+  document.getElementById("content").innerHTML = '<div class="loading">Cargando datos…</div>';
+  try {
+    const r = await fetch("/api/data");
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+    DATA = j;
+    renderAll();
+    document.getElementById("footer").textContent =
+      "Actualizado: " + new Date(j.updated).toLocaleString("es-EC") + " · " + j.count + " registros";
+  } catch (e) {
+    document.getElementById("content").innerHTML =
+      `<div class="empty">Error al cargar: ${e.message}</div>`;
+  }
+}
+
+document.getElementById("search").addEventListener("input", renderCards);
+document.getElementById("filterCity").addEventListener("change", renderCards);
+document.getElementById("refresh").addEventListener("click", load);
+load();
+</script>
+</body>
+</html>

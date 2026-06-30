@@ -1,0 +1,16 @@
+{
+  "name": "dashboard-postulantes",
+  "version": "1.0.0",
+  "description": "Dashboard que lee una hoja de Google Sheets y presenta los postulantes visualmente",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
