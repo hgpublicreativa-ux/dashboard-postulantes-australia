@@ -6,14 +6,16 @@
 <title>Dashboard Postulantes — Migración Circular Australia</title>
 <style>
   :root {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --card2: #334155;
-    --txt: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --accent2: #22c55e;
-    --border: #334155;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --card2: #1e3a5f;
+    --txt: #1e293b;
+    --muted: #64748b;
+    --accent: #0369a1;
+    --accent2: #15803d;
+    --border: #cbd5e1;
+    --row-alt: #f8fafc;
+    --row-hover: #e0f2fe;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -63,9 +65,11 @@
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
   table { border-collapse: collapse; width: 100%; font-size: .85rem; }
   th, td { padding: 10px 14px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
-  thead th { background: var(--card2); color: var(--txt); font-weight: 600; position: sticky; top: 0; z-index: 2; }
-  tbody tr:hover { background: rgba(56,189,248,.06); }
-  td.name { font-weight: 600; color: #fff; }
+  thead th { background: var(--card2); color: #fff; font-weight: 600; position: sticky; top: 0; z-index: 2; }
+  tbody tr:nth-child(even) td { background: var(--row-alt); }
+  tbody tr:nth-child(even) td.sticky { background: var(--row-alt); }
+  tbody tr:hover td, tbody tr:hover td.sticky { background: var(--row-hover); }
+  td.name { font-weight: 700; color: #0f172a; }
   .sticky { position: sticky; left: 0; background: var(--card); z-index: 1; }
   thead th.sticky { z-index: 3; background: var(--card2); }
   th.doc, td.doc { text-align: center; }
