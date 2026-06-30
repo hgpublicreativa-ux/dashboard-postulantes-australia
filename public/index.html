@@ -78,6 +78,27 @@
   .doc-ok:hover { background: rgba(34,197,94,.35); }
   td .x { color: #475569; }
   footer { margin-top: 32px; color: var(--muted); font-size: .8rem; text-align: center; }
+
+  @media (max-width: 768px) {
+    body { padding: 14px; }
+    h1 { font-size: 1.3rem; }
+    .sub { font-size: .8rem; }
+    .stats { gap: 10px; margin: 16px 0; }
+    .stat { padding: 12px 14px; min-width: 0; }
+    .stat .n { font-size: 1.4rem; }
+    .stat .l { font-size: .7rem; }
+    .toolbar { flex-direction: column; }
+    input, select, button { width: 100%; min-width: 0; }
+    table { font-size: .8rem; }
+    th, td { padding: 8px 10px; }
+    .table-wrap { -webkit-overflow-scrolling: touch; }
+    footer { font-size: .72rem; }
+  }
+  @media (max-width: 480px) {
+    h1 { font-size: 1.15rem; }
+    table { font-size: .75rem; }
+    th, td { padding: 7px 8px; }
+  }
 </style>
 </head>
 <body>
