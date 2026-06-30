@@ -58,8 +58,21 @@
   .badge { display: inline-block; background: var(--card2); padding: 2px 8px; border-radius: 6px; font-size: .75rem; }
   .badge.ok { background: rgba(34,197,94,.18); color: var(--accent2); }
   .badge.no { background: rgba(248,113,113,.18); color: #f87171; }
-  .link-btn { display: inline-block; background: rgba(56,189,248,.14); padding: 3px 10px; border-radius: 6px; font-size: .78rem; }
+  .link-btn { display: inline-block; white-space: nowrap; background: rgba(56,189,248,.14); padding: 3px 10px; border-radius: 6px; font-size: .78rem; }
   .link-btn:hover { background: rgba(56,189,248,.28); text-decoration: none !important; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+  th, td { padding: 10px 14px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
+  thead th { background: var(--card2); color: var(--txt); font-weight: 600; position: sticky; top: 0; z-index: 2; }
+  tbody tr:hover { background: rgba(56,189,248,.06); }
+  td.name { font-weight: 600; color: #fff; }
+  .sticky { position: sticky; left: 0; background: var(--card); z-index: 1; }
+  thead th.sticky { z-index: 3; background: var(--card2); }
+  th.doc, td.doc { text-align: center; }
+  .doc-ok { display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center;
+    background: rgba(34,197,94,.18); color: var(--accent2); border-radius: 6px; text-decoration: none; font-weight: 700; }
+  .doc-ok:hover { background: rgba(34,197,94,.35); }
+  td .x { color: #475569; }
   footer { margin-top: 32px; color: var(--muted); font-size: .8rem; text-align: center; }
 </style>
 </head>
@@ -92,7 +105,12 @@ const DOC_LABELS = {
   "Doc 6": "Evidencia de fondos económicos",
   "Doc 7": "Declaración juramentada",
 };
+const DOC_SHORT = {
+  "Doc 1": "Pasaporte", "Doc 2": "Académico", "Doc 3": "Motivación",
+  "Doc 4": "Antecedentes", "Doc 5": "Inglés", "Doc 6": "Fondos", "Doc 7": "Declaración",
+};
 const labelFor = (h) => DOC_LABELS[h.trim()] || h;
+const isDoc = (h) => /^Doc \d+$/.test(h.trim());
 const urlRe = /^(https?:\/\/|www\.)/i;
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRe = /^[+\d][\d\s\-()]{6,}$/;
@@ -160,11 +178,30 @@ function renderCards() {
     content.innerHTML = '<div class="empty">Sin resultados para el filtro actual.</div>';
     return;
   }
-  content.innerHTML = '<div class="grid">' + items.map(item => {
-    const fields = DATA.headers.filter(h => h !== nk).map(h =>
-      `<div class="field"><span class="k">${labelFor(h)}</span>${renderValue(item[h], h)}</div>`).join("");
-    return `<div class="card"><h3>${(item[nk]||"Sin nombre").trim()}</h3>${fields}</div>`;
-  }).join("") + '</div>';
+  const docCols = DATA.headers.filter(isDoc);
+  const infoCols = DATA.headers.filter(h => h !== nk && !isDoc(h));
+
+  const docCell = (v) => {
+    const s = (v || "").trim();
+    if (!s) return '<span class="x">—</span>';
+    const href = s.startsWith("http") ? s : "https://" + s;
+    return `<a class="doc-ok" href="${href}" target="_blank" rel="noopener" title="Abrir documento">✓</a>`;
+  };
+
+  const thead = `<tr>
+    <th class="sticky">Nombre</th>
+    ${infoCols.map(h => `<th>${labelFor(h)}</th>`).join("")}
+    ${docCols.map(h => `<th class="doc" title="${labelFor(h)}">${DOC_SHORT[h.trim()] || h}</th>`).join("")}
+  </tr>`;
+
+  const rows = items.map(item => `<tr>
+    <td class="sticky name">${(item[nk]||"Sin nombre").trim()}</td>
+    ${infoCols.map(h => `<td>${renderValue(item[h], h)}</td>`).join("")}
+    ${docCols.map(h => `<td class="doc">${docCell(item[h])}</td>`).join("")}
+  </tr>`).join("");
+
+  content.innerHTML = `<div class="table-wrap"><table>
+    <thead>${thead}</thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function renderAll() { renderStats(); fillCityFilter(); renderCards(); }
