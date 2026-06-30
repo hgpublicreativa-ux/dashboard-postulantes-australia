@@ -83,6 +83,16 @@
 
 <script>
 let DATA = { headers: [], items: [] };
+const DOC_LABELS = {
+  "Doc 1": "Pasaporte ecuatoriano vigente",
+  "Doc 2": "Certificado o récord académico universitario",
+  "Doc 3": "Carta de motivación",
+  "Doc 4": "Certificado de antecedentes penales",
+  "Doc 5": "Certificado de inglés",
+  "Doc 6": "Evidencia de fondos económicos",
+  "Doc 7": "Declaración juramentada",
+};
+const labelFor = (h) => DOC_LABELS[h.trim()] || h;
 const urlRe = /^(https?:\/\/|www\.)/i;
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRe = /^[+\d][\d\s\-()]{6,}$/;
@@ -152,7 +162,7 @@ function renderCards() {
   }
   content.innerHTML = '<div class="grid">' + items.map(item => {
     const fields = DATA.headers.filter(h => h !== nk).map(h =>
-      `<div class="field"><span class="k">${h}</span>${renderValue(item[h], h)}</div>`).join("");
+      `<div class="field"><span class="k">${labelFor(h)}</span>${renderValue(item[h], h)}</div>`).join("");
     return `<div class="card"><h3>${(item[nk]||"Sin nombre").trim()}</h3>${fields}</div>`;
   }).join("") + '</div>';
 }
