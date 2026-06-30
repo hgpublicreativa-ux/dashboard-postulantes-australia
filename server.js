@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // ID de la hoja de Google Sheets (publica: "Cualquiera con el enlace puede ver")
 const SHEET_ID =
   process.env.SHEET_ID || "1i13nEubCyewjxt9mDql-RIIqqeToHR83aBHw_pzPjk0";
-const SHEET_NAME = process.env.SHEET_NAME || ""; // opcional: nombre de pestana
+const SHEET_NAME = process.env.SHEET_NAME || "Postulantes"; // pestana a leer
 
 function csvUrl() {
   let url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
